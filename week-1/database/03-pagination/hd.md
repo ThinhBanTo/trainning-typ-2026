@@ -1,14 +1,34 @@
-# 03 - Pagination
+# Hướng dẫn chạy - Pagination
 
-## 1. Tại sao cần phân trang?
+## 1. Điều kiện trước khi chạy
 
-Không nên trả về toàn bộ tập dữ liệu lớn trong một lần vì:
-- tốn tài nguyên;
-- tăng dữ liệu truyền qua mạng;
-- giao diện xử lý chậm;
-- thời gian phản hồi lớn.
+Chạy module `01-sql-basic` trước:
 
-## 2. Offset-based Pagination
+```text
+ddl.sql
+seed.sql
+```
+
+Bảng `books` phải có dữ liệu.
+
+## 2. Thứ tự chạy pagination.sql
+
+### Query 1 - Offset page 1
+
+```sql
+select id, title
+from books
+order by id
+limit 3 offset 0;
+```
+
+Kết quả:
+
+```text
+lấy 3 bản ghi đầu tiên
+```
+
+### Query 2 - Offset page 2
 
 ```sql
 select id, title
@@ -17,22 +37,21 @@ order by id
 limit 3 offset 3;
 ```
 
-Công thức:
+Kết quả:
 
 ```text
-offset = (page - 1) * page_size
+bỏ qua 3 bản ghi đầu
+lấy 3 bản ghi tiếp theo
 ```
 
-### Ưu điểm
-- dễ hiểu;
-- dễ triển khai;
-- có thể nhảy đến trang cụ thể.
+Với `page_size = 3`:
 
-### Nhược điểm
-- offset lớn có thể chậm;
-- dữ liệu thêm/xóa liên tục có thể làm các trang dịch chuyển.
+```text
+page 1 -> offset 0
+page 2 -> offset 3
+```
 
-## 3. Cursor-based Pagination
+### Query 3 - Cursor-based
 
 ```sql
 select id, title
@@ -42,14 +61,46 @@ order by id
 limit 3;
 ```
 
-### Ưu điểm
-- phù hợp dữ liệu lớn;
-- phù hợp load more hoặc infinite scroll.
+Kết quả trả về các bản ghi đứng sau `id = 3`.
 
-### Nhược điểm
-- khó nhảy thẳng đến trang số N;
-- cần giữ cursor trước đó.
+Trong thực tế, số `3` được thay bằng `id` cuối cùng của trang trước.
 
-> `limit + offset` có trong tài liệu đã gửi. Cursor-based được bổ sung theo đúng yêu cầu Week 1.
+## 3. Phân tích
 
-Xem `screenshots/README.md`.
+Ở dữ liệu nhỏ, hai cách đều chạy nhanh.
+
+Khác biệt rõ hơn khi bảng rất lớn.
+
+### Offset
+
+Database vẫn phải xác định rồi bỏ qua các bản ghi trước vị trí offset.
+
+Ví dụ:
+
+```text
+limit 20 offset 100000
+```
+
+có thể chậm khi offset tăng cao.
+
+### Cursor
+
+Query đi tiếp từ giá trị đã biết:
+
+```text
+where id > last_id
+```
+
+Nếu `id` được Index thì database có thể tìm vị trí bắt đầu hiệu quả hơn.
+
+## 4. Output
+
+Cần giải thích được:
+
+```text
+- tại sao cần pagination
+- limit và offset hoạt động thế nào
+- công thức offset
+- cursor-based hoạt động thế nào
+- ưu nhược điểm của hai cách
+```

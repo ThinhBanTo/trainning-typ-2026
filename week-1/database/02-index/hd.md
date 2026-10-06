@@ -1,39 +1,99 @@
-# 02 - Index
+# Hướng dẫn chạy - Index
 
-## 1. Index là gì? Tại sao cần?
+## 1. Mục tiêu
 
-Index là cấu trúc dữ liệu giúp database tìm bản ghi nhanh hơn, có thể hình dung như mục lục của một cuốn sách.
+So sánh cùng một query:
 
-Khi không có index phù hợp, database có thể phải quét nhiều hoặc toàn bộ bảng.
+```text
+trước khi tạo Index
+sau khi tạo Index
+```
 
-Khi có index phù hợp, PostgreSQL có thể tìm vị trí dữ liệu nhanh hơn.
+## 2. Thứ tự chạy
 
-## 2. Khi nào nên đánh Index?
+Mở `index-demo.sql` và chạy từ trên xuống.
 
-Thường cân nhắc với cột thường xuyên xuất hiện trong:
-- `where`;
-- `join ... on`;
-- `order by`;
-- điều kiện tìm kiếm có tính chọn lọc tốt.
+File thực hiện:
 
-## 3. Khi nào không nên đánh Index?
+```text
+1. xóa bảng demo cũ nếu có
+2. tạo bảng index_demo
+3. sinh 200000 bản ghi
+4. analyze bảng
+5. explain trước Index
+6. tạo Index
+7. analyze lại
+8. explain sau Index
+```
 
-Không nên tạo index tràn lan vì:
-- tốn dung lượng lưu trữ;
-- `insert`, `update`, `delete` phải cập nhật thêm index;
-- bảng nhỏ có thể không cần thêm index;
-- một số cột có quá ít giá trị khác nhau có thể không mang lại lợi ích đáng kể.
+## 3. Kết quả trước Index
 
-## 4. Thực hành
+Query:
 
-Chạy `index-demo.sql`.
+```sql
+select id, search_code, payload
+from index_demo
+where search_code = 'BOOK-199999';
+```
 
-Dùng:
+được kiểm tra bằng:
 
 ```sql
 explain (analyze, buffers)
 ```
 
-để so sánh cùng một query trước và sau khi tạo index.
+Trước khi có Index, execution plan thường xuất hiện:
 
-Xem `screenshots/README.md`.
+```text
+Seq Scan
+```
+
+Điều đó nghĩa là PostgreSQL phải kiểm tra nhiều bản ghi để tìm giá trị cần thiết.
+
+## 4. Kết quả sau Index
+
+Sau khi chạy:
+
+```sql
+create index idx_index_demo_search_code
+on index_demo(search_code);
+```
+
+chạy lại đúng query cũ.
+
+Execution plan thường chuyển sang:
+
+```text
+Index Scan
+```
+
+hoặc:
+
+```text
+Bitmap Index Scan
+```
+
+## 5. Phân tích
+
+So sánh:
+
+```text
+Execution Time
+Buffers
+loại Scan
+```
+
+Thời gian cụ thể không cố định vì phụ thuộc máy, cache và trạng thái PostgreSQL.
+
+Điểm quan trọng là execution plan cho thấy cách database truy xuất dữ liệu đã thay đổi sau khi có Index.
+
+## 6. Output
+
+Module hoàn thành khi chứng minh được:
+
+```text
+- cùng một query trước và sau Index
+- tạo Index thành công
+- execution plan thay đổi
+- giải thích được lợi ích và chi phí của Index
+```

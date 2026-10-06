@@ -15,3 +15,8 @@ select
     min(published_year) as oldest_year,
     max(published_year) as newest_year
 from books;
+
+select
+    count(*) as total_books,
+    count(author_id) as books_with_author
+from books;

@@ -12,7 +12,7 @@ for update;
 
 -- giữ session a chưa commit
 
--- session b chạy ở cửa sổ khác:
+-- session b:
 --
 -- begin;
 --

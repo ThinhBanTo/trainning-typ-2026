@@ -17,6 +17,10 @@ where email = 'demo@example.com';
 delete from members
 where email = 'demo@example.com';
 
+select *
+from members
+where email = 'demo@example.com';
+
 select id, title, category
 from books
 where category = 'Technology'
@@ -36,4 +40,3 @@ select b.title, a.full_name as author_name
 from books b
 right join authors a on b.author_id = a.id
 order by a.id, b.id;
-
